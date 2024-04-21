@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado</title>
+</head>
+<body>
+    <h1>Resultado</h1>
+    <h2>Imagem Original:</h2>
+    <img src="{{ url_for('uploaded_file', filename=original_image) }}" alt="Imagem Original" width="400">
+    <h2>Imagem com Contornos:</h2>
+    <img src="{{ url_for('uploaded_file', filename=contoured_image) }}" alt="Imagem com Contornos" width="400">
+</body>
+</html>
+
