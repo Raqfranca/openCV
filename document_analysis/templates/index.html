@@ -6,9 +6,12 @@
     <title>Verificar se é frente ou o verso do documento</title>
 </head>
 <body>
-    <h1>Foto do documento</h1>
+    <h1>Fotos do documento</h1>
     <form action="/" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".png, .jpg, .jpeg">
+        <h2>Frente do documento</h2>
+        <input type="file" name="front_file" accept=".png, .jpg, .jpeg">
+        <h2>Parte de trás do documento</h2>
+        <input type="file" name="back_file" accept=".png, .jpg, .jpeg">
         <button type="submit">Enviar</button>
     </form>
     {% if message %}

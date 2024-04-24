@@ -8,13 +8,24 @@
 <body>
     <h1>Resultado</h1>
 
-    <h2>Foto do documento:</h2>
-    <img src="{{ url_for('uploaded_file', filename=original_image) }}" alt="Imagem Original" width="400">
+    <h2>Frente do documento:</h2>
+    <img src="{{ url_for('uploaded_file', filename=original_front_image) }}" alt="Frente do Documento" width="400">
+    <h2>Imagem com Contraste:</h2>
+    <img src="{{ url_for('uploaded_file', filename=contrasted_front_image) }}" alt="Imagem com Contraste" width="400">
+    <h2>Informações da Frente:</h2>
+    <p>Quantidade de Pixels Brancos: {{ white_pixels_front }}</p>
+    <p>Quantidade de Pixels Escuros: {{ black_pixels_front }}</p>
 
-    <h2>Imagem em Escala de Cinza:</h2>
-    <img src="{{ url_for('uploaded_file', filename=gray_image) }}" alt="Imagem em Escala de Cinza" width="400">
+    <h2>Parte de trás do documento:</h2>
+    <img src="{{ url_for('uploaded_file', filename=original_back_image) }}" alt="Parte de Trás do Documento" width="400">
+    <h2>Imagem com Contraste:</h2>
+    <img src="{{ url_for('uploaded_file', filename=contrasted_back_image) }}" alt="Imagem com Contraste" width="400">
+    <h2>Informações da Parte de Trás:</h2>
+    <p>Quantidade de Pixels Brancos: {{ white_pixels_back }}</p>
+    <p>Quantidade de Pixels Escuros: {{ black_pixels_back }}</p>
 
     <h2>Mensagem:</h2>
     <p>{{ message }}</p>
 </body>
 </html>
+

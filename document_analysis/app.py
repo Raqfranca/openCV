@@ -14,62 +14,76 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def detect_front_rg(image_path):
+def analyze_image(image_path):
     # Carregar a imagem
     image = cv2.imread(image_path)
 
     # Converter a imagem para escala de cinza
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-     # Equalizar o histograma para aumentar o contraste
-    gray_equalized = cv2.equalizeHist(gray)
+    # Aumentar o contraste
+    alpha = 1.5 # Fator de contraste
+    beta = 0     # Viés de brilho
+    contrasted_image = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
-     # Detectar bordas na imagem usando Canny
-    edges = cv2.Canny(gray_equalized, 30, 150)
+    # Salvar a imagem com contraste
+    contrasted_image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'contrasted_' + os.path.basename(image_path))
+    cv2.imwrite(contrasted_image_path, contrasted_image)
 
-    # Encontrar contornos na imagem
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Binarizar a imagem
+    _, binary_image = cv2.threshold(contrasted_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
-    # Verificar se há uma região retangular no canto superior direito (onde geralmente está a foto)
-    for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        if w > image.shape[1] / 2 and h > image.shape[0] / 2:
-            return True
+    # Contar pixels brancos e escuros
+    white_pixels = cv2.countNonZero(binary_image)
+    black_pixels = binary_image.size - white_pixels
 
-    # Verificar se há áreas de texto na parte inferior (onde geralmente estão as informações)
-    bottom_region = gray_equalized[int(0.75 * gray_equalized.shape[0]):, :]
-    _, bottom_thresh = cv2.threshold(bottom_region, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    bottom_contours, _ = cv2.findContours(bottom_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for contour in bottom_contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        if w > 0.5 * bottom_region.shape[1] and h > 0.1 * bottom_region.shape[0]:
-            return True
-
-    return False
+    return white_pixels, black_pixels, contrasted_image_path
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        if 'file' not in request.files:
-            return render_template('index.html', message='Nenhum arquivo enviado')
+        # Verifica se os arquivos 'front_file' e 'back_file' estão presentes no request
+        if 'front_file' not in request.files or 'back_file' not in request.files:
+            return render_template('index.html', message='Frente e parte de trás do documento são necessárias')
 
-        file = request.files['file']
-        if file.filename == '':
-            return render_template('index.html', message='Nenhum arquivo selecionado')
+        front_file = request.files['front_file']
+        back_file = request.files['back_file']
 
-        if file and allowed_file(file.filename):
-            filename = file.filename
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+        # Verifica se algum dos arquivos está vazio
+        if front_file.filename == '' or back_file.filename == '':
+            return render_template('index.html', message='Frente e parte de trás do documento são necessárias')
 
-            is_front_rg = detect_front_rg(filepath)
+        # Verifica se ambos os arquivos são permitidos
+        if front_file and back_file and allowed_file(front_file.filename) and allowed_file(back_file.filename):
+            front_filename = front_file.filename
+            back_filename = back_file.filename
 
-            if is_front_rg:
-                message = 'A imagem parece ser a frente de um RG.'
+            front_filepath = os.path.join(app.config['UPLOAD_FOLDER'], front_filename)
+            back_filepath = os.path.join(app.config['UPLOAD_FOLDER'], back_filename)
+
+            front_file.save(front_filepath)
+            back_file.save(back_filepath)
+
+            # Analisa ambas as imagens
+            white_pixels_front, black_pixels_front, contrasted_image_path_front = analyze_image(front_filepath)
+            white_pixels_back, black_pixels_back, contrasted_image_path_back = analyze_image(back_filepath)
+
+            # Verifica a diferença na quantidade de pixels escuros entre frente e verso
+            if black_pixels_front > black_pixels_back:
+                message = 'Usuário informou corretamente a foto da frente.'
             else:
-                message = 'A imagem não parece ser a frente de um RG.'
+                message = 'Usuário não informou corretamente a foto da frente e de trás.'
 
-            return render_template('result.html', original_image=filename, gray_image='gray_' + filename, message=message)
+            return render_template('result.html', 
+                                   original_front_image=front_filename, 
+                                   original_back_image=back_filename, 
+                                   contrasted_front_image=os.path.basename(contrasted_image_path_front),
+                                   contrasted_back_image=os.path.basename(contrasted_image_path_back),
+                                   white_pixels_front=white_pixels_front, 
+                                   black_pixels_front=black_pixels_front,
+                                   white_pixels_back=white_pixels_back, 
+                                   black_pixels_back=black_pixels_back,
+                                   message=message)
 
     return render_template('index.html')
 
@@ -79,3 +93,6 @@ def uploaded_file(filename):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
