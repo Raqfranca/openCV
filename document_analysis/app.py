@@ -15,18 +15,18 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def analyze_image(image_path):
-    # Carregar a imagem
+
     image = cv2.imread(image_path)
 
-    # Converter a imagem para escala de cinza
+    # Foto  para cinza
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Aumentar o contraste
-    alpha = 1.5 # Fator de contraste
-    beta = 0     # Viés de brilho
+    alpha = 1.5 
+    beta = 0   
     contrasted_image = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
-    # Salvar a imagem com contraste
+    # Salvar a imagem após contraste
     contrasted_image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'contrasted_' + os.path.basename(image_path))
     cv2.imwrite(contrasted_image_path, contrasted_image)
 
@@ -42,14 +42,13 @@ def analyze_image(image_path):
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        # Verifica se os arquivos 'front_file' e 'back_file' estão presentes no request
+        
         if 'front_file' not in request.files or 'back_file' not in request.files:
             return render_template('index.html', message='Frente e parte de trás do documento são necessárias')
 
         front_file = request.files['front_file']
         back_file = request.files['back_file']
 
-        # Verifica se algum dos arquivos está vazio
         if front_file.filename == '' or back_file.filename == '':
             return render_template('index.html', message='Frente e parte de trás do documento são necessárias')
 
@@ -64,11 +63,10 @@ def upload_file():
             front_file.save(front_filepath)
             back_file.save(back_filepath)
 
-            # Analisa ambas as imagens
             white_pixels_front, black_pixels_front, contrasted_image_path_front = analyze_image(front_filepath)
             white_pixels_back, black_pixels_back, contrasted_image_path_back = analyze_image(back_filepath)
 
-            # Verifica a diferença na quantidade de pixels escuros entre frente e verso
+            # Verifica a diferença na quantidade de pixels entre as fotos
             if black_pixels_front > black_pixels_back:
                 message = 'Usuário informou corretamente a foto da frente.'
             else:
