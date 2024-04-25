@@ -40,7 +40,7 @@ def draw_face_rectangles_and_contours(image_path, face_locations):
     for (top, right, bottom, left) in face_locations:
         cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 2)
     
-    cv2.drawContours(image, contours, -1, (0, 0, 255), 2)  # Draw all contours in red color
+    cv2.drawContours(image, contours, -1, (0, 0, 255), 2)  
     
     return image
 
