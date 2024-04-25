@@ -25,8 +25,23 @@ def analyze_image(image_path):
 
 def draw_face_rectangles(image_path, face_locations):
     image = cv2.imread(image_path)
+    
     for (top, right, bottom, left) in face_locations:
         cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 2)
+
+    return image
+
+def draw_face_rectangles_and_contours(image_path, face_locations):
+    image = cv2.imread(image_path)
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray_image, 30, 150)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    for (top, right, bottom, left) in face_locations:
+        cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 2)
+    
+    cv2.drawContours(image, contours, -1, (0, 0, 255), 2)  # Draw all contours in red color
+    
     return image
 
 @app.route('/', methods=['GET', 'POST'])
@@ -55,12 +70,12 @@ def upload_file():
             back_has_face, num_back_faces, back_face_locations = analyze_image(back_filepath)
             selfie_has_face, num_selfie_faces, selfie_face_locations = analyze_image(selfie_filepath)
 
-            if front_has_face:
-                front_image_with_rectangles = draw_face_rectangles(front_filepath, front_face_locations)
+            if front_file:
+                front_image_with_rectangles = draw_face_rectangles_and_contours(front_filepath, front_face_locations)
                 cv2.imwrite(front_filepath, front_image_with_rectangles)
                 
-            if back_has_face:
-                back_image_with_rectangles = draw_face_rectangles(back_filepath, back_face_locations)
+            if back_file:
+                back_image_with_rectangles = draw_face_rectangles_and_contours(back_filepath, back_face_locations)
                 cv2.imwrite(back_filepath, back_image_with_rectangles)
 
             if selfie_has_face:
@@ -80,12 +95,14 @@ def upload_file():
 
     return render_template('index.html')
 
+
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
