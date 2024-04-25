@@ -10,19 +10,29 @@
 
     <h2>Frente do documento:</h2>
     <img src="{{ url_for('uploaded_file', filename=original_front_image) }}" alt="Frente do Documento" width="400">
-    <h2>Imagem com Contraste:</h2>
-    <img src="{{ url_for('uploaded_file', filename=contrasted_front_image) }}" alt="Imagem com Contraste" width="400">
-    <h2>Informações da Frente:</h2>
-
+    {% if front_has_face %}
+    <p>{{ num_front_faces }} face(s) detectada(s) na frente do documento.</p>
+    {% else %}
+    <p>Nenhum rosto detectado na frente do documento.</p>
+    {% endif %}
 
     <h2>Parte de trás do documento:</h2>
     <img src="{{ url_for('uploaded_file', filename=original_back_image) }}" alt="Parte de Trás do Documento" width="400">
-    <h2>Imagem com Contraste:</h2>
-    <img src="{{ url_for('uploaded_file', filename=contrasted_back_image) }}" alt="Imagem com Contraste" width="400">
-    <h2>Informações da Parte de Trás:</h2>
-
-    <h2>Mensagem:</h2>
-    <p>{{ message }}</p>
+    {% if back_has_face %}
+    <p>{{ num_back_faces }} face(s) detectada(s) na parte de trás do documento.</p>
+    {% else %}
+    <p>Nenhum rosto detectado na parte de trás do documento.</p>
+    {% endif %}
+    
+    <h2>Selfie</h2>
+    <img src="{{ url_for('uploaded_file', filename=original_selfie_image) }}" alt="Selfie" width="400">
+    {% if selfie_has_face %}
+    <p>{{ num_selfie_faces }} face(s) detectada(s) na foto.</p>
+    {% else %}
+    <p>Nenhum rosto detectado na foto.</p>
+    {% endif %}
 </body>
 </html>
+
+
 
