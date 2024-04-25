@@ -40,8 +40,25 @@ def draw_face_rectangles_and_contours(image_path, face_locations):
     for (top, right, bottom, left) in face_locations:
         cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 2)
     
-    cv2.drawContours(image, contours, -1, (0, 0, 255), 2)  
-    
+    # Se houver contornos detectados
+    if contours:
+        # Encontre o contorno de maior área
+        largest_contour = max(contours, key=cv2.contourArea)
+        
+        # Obtenha as coordenadas do retângulo delimitador do contorno
+        x, y, w, h = cv2.boundingRect(largest_contour)
+        
+        # Desenhe o contorno de maior área em vermelho
+        cv2.drawContours(image, [largest_contour], -1, (0, 0, 255), 2)
+        
+        # Desenhe o retângulo delimitador em volta do contorno em azul
+        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
+        
+        # Corte a região da imagem delimitada pelo contorno
+        cropped_image = image[y:y+h, x:x+w]
+        
+        return cropped_image
+
     return image
 
 @app.route('/', methods=['GET', 'POST'])
