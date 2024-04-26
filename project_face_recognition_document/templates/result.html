@@ -31,6 +31,14 @@
     {% else %}
     <p>Nenhum rosto detectado na foto.</p>
     {% endif %}
+
+    {% if same_person %}
+    <h2>Verificação de Identidade</h2>
+    <p>A pessoa na selfie é a mesma do documento frontal.</p>
+    {% else %}
+    <h2>Verificação de Identidade</h2>
+    <p>A pessoa na selfie não é a mesma do documento frontal.</p>
+    {% endif %}
 </body>
 </html>
 

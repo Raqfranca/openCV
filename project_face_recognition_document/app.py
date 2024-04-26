@@ -42,24 +42,43 @@ def draw_face_rectangles_and_contours(image_path, face_locations):
     
     # Se houver contornos detectados
     if contours:
+        
         # Encontre o contorno de maior área
         largest_contour = max(contours, key=cv2.contourArea)
         
-        # Obtenha as coordenadas do retângulo delimitador do contorno
+        # Coordenadas do retângulo 
         x, y, w, h = cv2.boundingRect(largest_contour)
         
-        # Desenhe o contorno de maior área em vermelho
+        # Contorno de maior área em vermelho
         cv2.drawContours(image, [largest_contour], -1, (0, 0, 255), 2)
         
-        # Desenhe o retângulo delimitador em volta do contorno em azul
+        # Desenhe o retângulo azul
         cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
         
-        # Corte a região da imagem delimitada pelo contorno
+        # Corte a região da imagem 
         cropped_image = image[y:y+h, x:x+w]
         
         return cropped_image
 
     return image
+
+def compare_faces(image1_path, image2_path):
+    # Carregar as imagens
+    image1 = face_recognition.load_image_file(image1_path)
+    image2 = face_recognition.load_image_file(image2_path)
+
+    # Obter os encodings faciais
+    encoding1 = face_recognition.face_encodings(image1)[0]
+    encoding2 = face_recognition.face_encodings(image2)[0]
+
+    # Comparar os encodings
+    results = face_recognition.compare_faces([encoding1], encoding2)
+
+    # Se houver uma correspondência, as imagens contêm a mesma pessoa
+    if results[0]:
+        return True
+    else:
+        return False
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -99,6 +118,9 @@ def upload_file():
                 selfie_image_with_rectangles = draw_face_rectangles(selfie_filepath, selfie_face_locations)
                 cv2.imwrite(selfie_filepath, selfie_image_with_rectangles)
 
+            # Comparar se a pessoa na selfie é a mesma do documento frontal
+            same_person = compare_faces(front_filepath, selfie_filepath)
+
             return render_template('result.html', 
                        original_front_image=front_file.filename, 
                        original_back_image=back_file.filename,
@@ -108,7 +130,8 @@ def upload_file():
                        back_has_face=back_has_face,
                        num_back_faces=num_back_faces,
                        selfie_has_face=selfie_has_face,
-                       num_selfie_faces=num_selfie_faces)
+                       num_selfie_faces=num_selfie_faces,
+                       same_person=same_person)
 
     return render_template('index.html')
 
@@ -119,6 +142,7 @@ def uploaded_file(filename):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
