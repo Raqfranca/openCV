@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado</title>
+</head>
+<body>
+    <h1>Resultado</h1>
+
+    <h2>1º Foto</h2>
+    <img src="{{ url_for('uploaded_file', filename=original_front_image) }}" alt="Frente do Documento" width="400">
+
+    <h2>2º Foto</h2>
+    <img src="{{ url_for('uploaded_file', filename=original_back_image) }}" alt="Parte de Trás do Documento" width="400">
+    
+</body>
+</html>
+
+
+
