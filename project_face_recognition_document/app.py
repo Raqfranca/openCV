@@ -71,14 +71,10 @@ def compare_faces(image1_path, image2_path):
     encoding1 = face_recognition.face_encodings(image1)[0]
     encoding2 = face_recognition.face_encodings(image2)[0]
 
-    # Comparar os encodings
-    results = face_recognition.compare_faces([encoding1], encoding2)
+    # Calcular a distância euclidiana entre os encodings
+    euclidean_distance = face_recognition.face_distance([encoding1], encoding2)[0]
 
-    # Se houver uma correspondência, as imagens contêm a mesma pessoa
-    if results[0]:
-        return True
-    else:
-        return False
+    return euclidean_distance
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -107,7 +103,7 @@ def upload_file():
             selfie_has_face, num_selfie_faces, selfie_face_locations = analyze_image(selfie_filepath)
 
             if front_file:
-                front_image_with_rectangles = draw_face_rectangles_and_contours(front_filepath, front_face_locations)
+                front_image_with_rectangles = draw_face_rectangles(front_filepath, front_face_locations)
                 cv2.imwrite(front_filepath, front_image_with_rectangles)
                 
             if back_file:
@@ -118,8 +114,14 @@ def upload_file():
                 selfie_image_with_rectangles = draw_face_rectangles(selfie_filepath, selfie_face_locations)
                 cv2.imwrite(selfie_filepath, selfie_image_with_rectangles)
 
-            # Comparar se a pessoa na selfie é a mesma do documento frontal
-            same_person = compare_faces(front_filepath, selfie_filepath)
+            # Comparar se a pessoa na selfie é a mesma do documento 
+            euclidean_distance_threshold = 0.55  # Limite de distância euclidiana
+            euclidean_distance = compare_faces(front_filepath, selfie_filepath)
+
+            if euclidean_distance <= euclidean_distance_threshold:
+                same_person = True
+            else:
+                same_person = False
 
             return render_template('result.html', 
                        original_front_image=front_file.filename, 
@@ -131,7 +133,8 @@ def upload_file():
                        num_back_faces=num_back_faces,
                        selfie_has_face=selfie_has_face,
                        num_selfie_faces=num_selfie_faces,
-                       same_person=same_person)
+                       same_person=same_person,
+                       euclidean_distance=euclidean_distance)
 
     return render_template('index.html')
 
@@ -142,6 +145,7 @@ def uploaded_file(filename):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 

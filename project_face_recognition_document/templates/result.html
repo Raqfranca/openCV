@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,9 +35,11 @@
     {% if same_person %}
     <h2>Verificação de Identidade</h2>
     <p>A pessoa na selfie é a mesma do documento frontal.</p>
+    <p>Distância Euclidiana: {{ euclidean_distance }}</p>
     {% else %}
     <h2>Verificação de Identidade</h2>
     <p>A pessoa na selfie não é a mesma do documento frontal.</p>
+    <p>Distância Euclidiana: {{ euclidean_distance }}</p>
     {% endif %}
 </body>
 </html>
