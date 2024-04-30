@@ -1,19 +1,10 @@
 from flask import Flask, request, jsonify
-import os
 import face_recognition
 import cv2
 import numpy as np
 import base64
 
 app = Flask(__name__)
-
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def compare_faces(image1_data, image2_data):
     # Decodificar as imagens base64
@@ -40,16 +31,8 @@ def compare_faces(image1_data, image2_data):
 # Define as rotas da API
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    data = request.json
-
-    if 'document_image' not in data or 'selfie_image' not in data:
-        return jsonify({'error': 'Missing image data'})
-
-    document_image = data['document_image']
-    selfie_image = data['selfie_image']
-
-    if not document_image or not selfie_image:
-        return jsonify({'error': 'Invalid image data'})
+    document_image = request.files['document_image'].read()
+    selfie_image = request.files['selfie_image'].read()
 
     # Comparar as faces nas duas imagens
     euclidean_distance_threshold = 0.55  # Limite de distância euclidiana
@@ -57,7 +40,7 @@ def analyze():
 
     same_person = euclidean_distance <= euclidean_distance_threshold
 
-    return jsonify({'same_person': same_person, 'euclidean_distance': euclidean_distance.item()})
+    return jsonify({'same_person': bool(same_person), 'euclidean_distance': float(euclidean_distance)})
 
 # Rota para verificar a saúde da API
 @app.route('/health', methods=['GET'])
@@ -66,3 +49,4 @@ def health_check():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
