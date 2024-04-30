@@ -31,32 +31,21 @@ def draw_face_rectangles(image_path, face_locations):
 
     return image
 
-def draw_face_rectangles_and_contours(image_path, face_locations):
+def draw_face_rectangles_and_contours(image_path, face_locations, margin=30):
     image = cv2.imread(image_path)
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray_image, 30, 150)
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     for (top, right, bottom, left) in face_locations:
-        cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 2)
-    
-    # Se houver contornos detectados
-    if contours:
+        # Calcula as novas coordenadas com a margem extra
+        new_top = max(0, top - margin)
+        new_right = min(image.shape[1], right + margin)
+        new_bottom = min(image.shape[0], bottom + margin)
+        new_left = max(0, left - margin)
         
-        # Encontre o contorno de maior área
-        largest_contour = max(contours, key=cv2.contourArea)
+        # Desenha o retângulo verde com a margem extra
+        cv2.rectangle(image, (new_left, new_top), (new_right, new_bottom), (0, 255, 0), 2)
         
-        # Coordenadas do retângulo 
-        x, y, w, h = cv2.boundingRect(largest_contour)
-        
-        # Contorno de maior área em vermelho
-        cv2.drawContours(image, [largest_contour], -1, (0, 0, 255), 2)
-        
-        # Desenhe o retângulo azul
-        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        
-        # Corte a região da imagem 
-        cropped_image = image[y:y+h, x:x+w]
+        # Corte a região da imagem com a margem extra
+        cropped_image = image[new_top:new_bottom, new_left:new_right]
         
         return cropped_image
 
@@ -111,7 +100,7 @@ def upload_file():
                 cv2.imwrite(back_filepath, back_image_with_rectangles)
 
             if selfie_has_face:
-                selfie_image_with_rectangles = draw_face_rectangles(selfie_filepath, selfie_face_locations)
+                selfie_image_with_rectangles = draw_face_rectangles_and_contours(selfie_filepath, selfie_face_locations)
                 cv2.imwrite(selfie_filepath, selfie_image_with_rectangles)
 
             # Comparar se a pessoa na selfie é a mesma do documento 
