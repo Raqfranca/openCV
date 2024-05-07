@@ -5,26 +5,28 @@ import pytesseract
 
 app = Flask(__name__)
 
-# Obtenha o diretório atual do script
-script_dir = os.path.dirname(__file__)
-
-@app.route('/extrair-texto', methods=['POST'])
-def extrair_texto():
-    imagem = request.files['imagem']
-    texto_extraido = extrair_texto_da_imagem(imagem)
-    return jsonify({'texto': texto_extraido})
-
-def extrair_texto_da_imagem(imagem):
-    # Carregar a imagem
-    img = Image.open(imagem)
+@app.route('/text', methods=['POST'])
+def extract_text():
+    # Receber o arquivo de imagem
+    image = request.files['image']
     
     # Extrair texto da imagem
-    texto_extraido = pytesseract.image_to_string(img, lang='por')
+    extracted_text = extract_text_from_image(image)
     
-    return texto_extraido
+    # Retornar o texto extraído como resposta JSON
+    return jsonify({'text': extracted_text})
+
+def extract_text_from_image(image):
+    img = Image.open(image)
+    
+    # Extrair texto da imagem usando Tesseract OCR
+    extracted_text = pytesseract.image_to_string(img, lang='por')
+    
+    return extracted_text
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8080)
+
 
 
 
